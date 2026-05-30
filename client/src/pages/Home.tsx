@@ -121,8 +121,6 @@ export default function Home() {
           {locationData.weather ? (
             <div className="bg-card p-6 rounded-lg shadow-sm">
               <TideChart
-                data={locationData.tideData}
-                currentHeight={locationData.currentTideHeight}
                 isRising={locationData.isTideRising}
                 location="Maré Atual"
               />
