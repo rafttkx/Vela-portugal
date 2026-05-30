@@ -1,4 +1,5 @@
 import React from 'react';
+import { degreesToCompass } from '@/hooks/useWeatherData';
 
 interface WindCompassProps {
   windDirection: number; // 0-360 degrees
@@ -131,7 +132,7 @@ export const WindCompass: React.FC<WindCompassProps> = ({ windDirection, windSpe
           {windSpeed.toFixed(1)} km/h
         </div>
         <div className="font-small text-muted-foreground">
-          {windDirection.toFixed(0)}°
+          {degreesToCompass(windDirection)}
         </div>
       </div>
     </div>

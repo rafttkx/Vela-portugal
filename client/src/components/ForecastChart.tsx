@@ -1,6 +1,6 @@
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Bar } from 'recharts';
-import { ForecastData } from '@/hooks/useWeatherData';
+import { ForecastData, degreesToCompass } from '@/hooks/useWeatherData';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
 interface ForecastChartProps {
@@ -63,45 +63,20 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ data }) => {
         </ResponsiveContainer>
       </div>
 
-      {/* Wind Direction Chart - Fixed with proper domain */}
+      {/* Wind Direction Compass Display */}
       <div className="bg-card p-4 rounded-lg">
-        <h3 className="font-heading text-primary mb-4">Direção do Vento</h3>
-        <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E8E8E8" />
-            <XAxis
-              dataKey="time"
-              tick={{ fontSize: 12, fill: '#666666' }}
-              stroke="#E8E8E8"
-            />
-            <YAxis
-              tick={{ fontSize: 12, fill: '#666666' }}
-              stroke="#E8E8E8"
-              domain={[0, 360]}
-              ticks={[0, 90, 180, 270, 360]}
-              label={{ value: 'Graus (°)', angle: -90, position: 'insideLeft' }}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #E8E8E8',
-                borderRadius: '0.5rem',
-              }}
-              labelStyle={{ color: '#1A1A1A' }}
-              formatter={(value) => `${value}°`}
-            />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="windDirection"
-              stroke="#FF6B35"
-              dot={{ fill: '#FF6B35', r: 4 }}
-              strokeWidth={2}
-              name="Direção"
-              isAnimationActive={true}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        <h3 className="font-heading text-primary mb-4">Direção do Vento (Bússola)</h3>
+        <div className="grid grid-cols-4 gap-2">
+          {data.map((item, idx) => (
+            <div
+              key={idx}
+              className="p-3 rounded-lg bg-secondary text-center border border-border"
+            >
+              <div className="text-xs text-muted-foreground">{item.time}</div>
+              <div className="text-lg font-semibold text-primary">{degreesToCompass(item.windDirection)}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Temperature & Wave Height */}
@@ -205,7 +180,7 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ data }) => {
             {data.map((row, idx) => (
               <tr key={idx} className="border-b border-border hover:bg-secondary transition-colors">
                 <td className="py-2 px-3 font-mono text-foreground">{row.time}</td>
-                <td className="py-2 px-3 text-foreground">{row.windSpeed.toFixed(1)} km/h - {row.windDirection.toFixed(0)}°</td>
+                <td className="py-2 px-3 text-foreground">{row.windSpeed.toFixed(1)} km/h - {degreesToCompass(row.windDirection)}</td>
                 <td className="py-2 px-3 text-foreground">{row.temperature.toFixed(1)}</td>
                 <td className="py-2 px-3 text-foreground">{row.waveHeight.toFixed(2)}</td>
               </tr>

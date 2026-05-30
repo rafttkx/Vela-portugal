@@ -2,7 +2,7 @@ import React from 'react';
 import { WindCompass } from '@/components/WindCompass';
 import { TideChart } from '@/components/TideChart';
 import { ForecastChart } from '@/components/ForecastChart';
-import { useWeatherData, PORTUGAL_LOCATIONS } from '@/hooks/useWeatherData';
+import { useWeatherData, PORTUGAL_LOCATIONS, degreesToCompass } from '@/hooks/useWeatherData';
 import { Loader2, Compass } from 'lucide-react';
 
 /**
@@ -79,7 +79,7 @@ export default function Home() {
                 <div className="border-t border-border pt-4">
                   <div className="font-small text-muted-foreground mb-1">Direção</div>
                   <div className="font-data text-2xl text-primary">
-                    {locationData.weather.windDirection.toFixed(0)}°
+                    {degreesToCompass(locationData.weather.windDirection)}
                   </div>
                 </div>
 

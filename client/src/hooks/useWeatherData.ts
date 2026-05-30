@@ -44,6 +44,13 @@ export const PORTUGAL_LOCATIONS: WeatherLocation[] = [
   { name: 'Vila Real de Santo António (Associação Naval do Guadiana)', lat: 37.1833, lon: -7.4167, id: '1' },
 ];
 
+// Convert wind direction degrees to compass direction
+export const degreesToCompass = (degrees: number): string => {
+  const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+  const index = Math.round(degrees / 22.5) % 16;
+  return directions[index];
+};
+
 export const useWeatherData = (location: WeatherLocation) => {
   const [data, setData] = useState<LocationWeatherData>({
     location,
