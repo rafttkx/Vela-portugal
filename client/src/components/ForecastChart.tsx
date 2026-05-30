@@ -196,8 +196,7 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ data }) => {
           <thead>
             <tr className="border-b border-border">
               <th className="text-left py-2 px-3 font-semibold text-primary">Hora</th>
-              <th className="text-left py-2 px-3 font-semibold text-primary">Vento (km/h)</th>
-              <th className="text-left py-2 px-3 font-semibold text-primary">Direção (°)</th>
+              <th className="text-left py-2 px-3 font-semibold text-primary">Vento (km/h) - Direção</th>
               <th className="text-left py-2 px-3 font-semibold text-primary">Temperatura (°C)</th>
               <th className="text-left py-2 px-3 font-semibold text-primary">Ondas (m)</th>
             </tr>
@@ -206,8 +205,7 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ data }) => {
             {data.map((row, idx) => (
               <tr key={idx} className="border-b border-border hover:bg-secondary transition-colors">
                 <td className="py-2 px-3 font-mono text-foreground">{row.time}</td>
-                <td className="py-2 px-3 text-foreground">{row.windSpeed.toFixed(1)}</td>
-                <td className="py-2 px-3 text-foreground">{row.windDirection.toFixed(0)}°</td>
+                <td className="py-2 px-3 text-foreground">{row.windSpeed.toFixed(1)} km/h - {row.windDirection.toFixed(0)}°</td>
                 <td className="py-2 px-3 text-foreground">{row.temperature.toFixed(1)}</td>
                 <td className="py-2 px-3 text-foreground">{row.waveHeight.toFixed(2)}</td>
               </tr>
