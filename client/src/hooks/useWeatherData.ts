@@ -15,6 +15,14 @@ export interface WeatherData {
   timestamp: Date;
 }
 
+export interface ForecastData {
+  time: string;
+  windSpeed: number;
+  windDirection: number;
+  temperature: number;
+  waveHeight: number;
+}
+
 export interface TideData {
   time: string;
   height: number;
@@ -23,6 +31,7 @@ export interface TideData {
 export interface LocationWeatherData {
   location: WeatherLocation;
   weather: WeatherData | null;
+  forecast: ForecastData[];
   tideData: TideData[];
   currentTideHeight: number;
   isTideRising: boolean;
@@ -30,26 +39,16 @@ export interface LocationWeatherData {
   error: string | null;
 }
 
-// Portuguese coastal locations
+// Vila Real de Santo António - Associação Naval do Guadiana
 export const PORTUGAL_LOCATIONS: WeatherLocation[] = [
-  { name: 'Figueira da Foz', lat: 40.1417, lon: -8.8783, id: '1' },
-  { name: 'Nazaré', lat: 39.6009, lon: -9.0747, id: '2' },
-  { name: 'Peniche', lat: 39.3567, lon: -9.3806, id: '3' },
-  { name: 'Cascais', lat: 38.6867, lon: -9.4204, id: '4' },
-  { name: 'Costa da Caparica', lat: 38.6633, lon: -9.2167, id: '5' },
-  { name: 'Sesimbra', lat: 38.4437, lon: -9.1033, id: '6' },
-  { name: 'Sagres', lat: 37.0183, lon: -8.9450, id: '7' },
-  { name: 'Tavira', lat: 37.2639, lon: -7.9139, id: '8' },
-  { name: 'Vilamoura', lat: 37.0667, lon: -8.1167, id: '9' },
-  { name: 'Olhão', lat: 37.0333, lon: -7.8500, id: '10' },
-  { name: 'Vila Real de Santo António', lat: 37.1833, lon: -7.4167, id: '11' },
-  { name: 'Marina da Associação do Guadiana', lat: 37.2167, lon: -7.4333, id: '12' },
+  { name: 'Vila Real de Santo António (Associação Naval do Guadiana)', lat: 37.1833, lon: -7.4167, id: '1' },
 ];
 
 export const useWeatherData = (location: WeatherLocation) => {
   const [data, setData] = useState<LocationWeatherData>({
     location,
     weather: null,
+    forecast: [],
     tideData: [],
     currentTideHeight: 0,
     isTideRising: false,
@@ -81,16 +80,35 @@ export const useWeatherData = (location: WeatherLocation) => {
         throw new Error('Invalid API response structure');
       }
 
-      // Get first available data point (current hour)
+      // Get current and forecast data
       const windSpeedArray = weatherJson.hourly.wind_speed_10m;
       const windDirectionArray = weatherJson.hourly.wind_direction_10m || [];
       const waveHeightArray = weatherJson.hourly.wave_height || [];
       const temperatureArray = weatherJson.hourly.temperature_2m || [];
+      const timeArray = weatherJson.hourly.time || [];
 
+      // Current data (first hour)
       const windSpeed = windSpeedArray.length > 0 ? windSpeedArray[0] : 0;
       const windDirection = windDirectionArray.length > 0 ? windDirectionArray[0] : 0;
       const waveHeight = waveHeightArray.length > 0 ? waveHeightArray[0] : 0;
       const temperature = temperatureArray.length > 0 ? temperatureArray[0] : 18;
+
+      // Build forecast for the rest of the day (next 24 hours)
+      const now = new Date();
+      const currentHour = now.getHours();
+      const hoursRemaining = 24 - currentHour;
+
+      const forecast: ForecastData[] = [];
+      for (let i = 0; i < Math.min(hoursRemaining, windSpeedArray.length); i++) {
+        const time = new Date(now.getTime() + i * 60 * 60 * 1000);
+        forecast.push({
+          time: time.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }),
+          windSpeed: Math.max(0, windSpeedArray[i] || 0),
+          windDirection: Math.max(0, Math.min(360, windDirectionArray[i] || 0)),
+          temperature: Math.round((temperatureArray[i] || 18) * 10) / 10,
+          waveHeight: Math.max(0, waveHeightArray[i] || 0),
+        });
+      }
 
       // Generate mock tide data (in production, use a tide API)
       const tideData = generateMockTideData();
@@ -105,6 +123,7 @@ export const useWeatherData = (location: WeatherLocation) => {
           temperature: Math.round(temperature * 10) / 10,
           timestamp: new Date(),
         },
+        forecast,
         tideData,
         currentTideHeight: currentHeight,
         isTideRising: isRising,
