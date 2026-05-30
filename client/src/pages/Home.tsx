@@ -3,7 +3,7 @@ import { WindCompass } from '@/components/WindCompass';
 import { TideChart } from '@/components/TideChart';
 import { ForecastChart } from '@/components/ForecastChart';
 import { useWeatherData, PORTUGAL_LOCATIONS } from '@/hooks/useWeatherData';
-import { Loader2, Compass, Waves } from 'lucide-react';
+import { Loader2, Compass } from 'lucide-react';
 
 /**
  * Design Philosophy: Minimalismo Náutico Moderno
@@ -87,16 +87,6 @@ export default function Home() {
                   <div className="font-small text-muted-foreground mb-1">Temperatura</div>
                   <div className="font-data text-2xl text-primary">
                     {locationData.weather.temperature}°C
-                  </div>
-                </div>
-
-                <div className="border-t border-border pt-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Waves size={16} className="text-primary" />
-                    <span className="font-small text-muted-foreground">Ondas</span>
-                  </div>
-                  <div className="font-data text-2xl text-primary">
-                    {locationData.weather.waveHeight.toFixed(1)} m
                   </div>
                 </div>
 
