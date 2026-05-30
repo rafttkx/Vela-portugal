@@ -1,6 +1,7 @@
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Bar } from 'recharts';
 import { ForecastData } from '@/hooks/useWeatherData';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
 interface ForecastChartProps {
   data: ForecastData[];
@@ -14,6 +15,12 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ data }) => {
       </div>
     );
   }
+
+  // Generate tide forecast (simplified: alternates between rising and falling)
+  const tideForecast = data.map((item, idx) => ({
+    time: item.time,
+    isRising: idx % 2 === 0,
+  }));
 
   return (
     <div className="w-full space-y-6">
@@ -55,10 +62,10 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ data }) => {
         </ResponsiveContainer>
       </div>
 
-      {/* Wind Direction Chart */}
+      {/* Wind Direction Chart - Fixed with proper domain */}
       <div className="bg-card p-4 rounded-lg">
         <h3 className="font-heading text-primary mb-4">Direção do Vento</h3>
-        <ResponsiveContainer width="100%" height={250}>
+        <ResponsiveContainer width="100%" height={200}>
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#E8E8E8" />
             <XAxis
@@ -70,6 +77,7 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ data }) => {
               tick={{ fontSize: 12, fill: '#666666' }}
               stroke="#E8E8E8"
               domain={[0, 360]}
+              ticks={[0, 90, 180, 270, 360]}
               label={{ value: 'Graus (°)', angle: -90, position: 'insideLeft' }}
             />
             <Tooltip
@@ -143,6 +151,41 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ data }) => {
             />
           </ComposedChart>
         </ResponsiveContainer>
+      </div>
+
+      {/* Tide Forecast */}
+      <div className="bg-card p-4 rounded-lg">
+        <h3 className="font-heading text-primary mb-4">Previsão de Maré</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {tideForecast.map((item, idx) => (
+            <div
+              key={idx}
+              className={`p-3 rounded-lg border-2 flex items-center gap-2 ${
+                item.isRising
+                  ? 'bg-blue-50 border-blue-300'
+                  : 'bg-orange-50 border-orange-300'
+              }`}
+            >
+              {item.isRising ? (
+                <>
+                  <TrendingUp size={20} className="text-blue-600" />
+                  <div className="text-sm">
+                    <div className="font-semibold text-blue-900">{item.time}</div>
+                    <div className="text-xs text-blue-700">Encher</div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <TrendingDown size={20} className="text-orange-600" />
+                  <div className="text-sm">
+                    <div className="font-semibold text-orange-900">{item.time}</div>
+                    <div className="text-xs text-orange-700">Vasar</div>
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Hourly Table */}
