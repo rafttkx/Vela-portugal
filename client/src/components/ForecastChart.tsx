@@ -17,7 +17,8 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ data }) => {
   }
 
   // Generate tide forecast (simplified: alternates between rising and falling)
-  const tideForecast = data.map((item, idx) => ({
+  // Show next 6-8 hours of tide forecast
+  const tideForecast = data.slice(0, Math.min(8, data.length)).map((item, idx) => ({
     time: item.time,
     isRising: idx % 2 === 0,
   }));
@@ -156,7 +157,7 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ data }) => {
       {/* Tide Forecast */}
       <div className="bg-card p-4 rounded-lg">
         <h3 className="font-heading text-primary mb-4">Previsão de Maré</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {tideForecast.map((item, idx) => (
             <div
               key={idx}
@@ -169,16 +170,16 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ data }) => {
               {item.isRising ? (
                 <>
                   <TrendingUp size={20} className="text-blue-600" />
-                  <div className="text-sm">
-                    <div className="font-semibold text-blue-900">{item.time}</div>
+                  <div className="text-sm flex-1">
+                    <div className="font-semibold text-blue-900 text-xs">{item.time}</div>
                     <div className="text-xs text-blue-700">Encher</div>
                   </div>
                 </>
               ) : (
                 <>
                   <TrendingDown size={20} className="text-orange-600" />
-                  <div className="text-sm">
-                    <div className="font-semibold text-orange-900">{item.time}</div>
+                  <div className="text-sm flex-1">
+                    <div className="font-semibold text-orange-900 text-xs">{item.time}</div>
                     <div className="text-xs text-orange-700">Vasar</div>
                   </div>
                 </>

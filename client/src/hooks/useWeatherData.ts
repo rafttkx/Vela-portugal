@@ -93,13 +93,14 @@ export const useWeatherData = (location: WeatherLocation) => {
       const waveHeight = waveHeightArray.length > 0 ? waveHeightArray[0] : 0;
       const temperature = temperatureArray.length > 0 ? temperatureArray[0] : 18;
 
-      // Build forecast for the rest of the day (next 24 hours)
+      // Build forecast for the rest of the day (next 24 hours, minimum 8 hours)
       const now = new Date();
       const currentHour = now.getHours();
       const hoursRemaining = 24 - currentHour;
+      const minHours = Math.max(8, hoursRemaining);
 
       const forecast: ForecastData[] = [];
-      for (let i = 0; i < Math.min(hoursRemaining, windSpeedArray.length); i++) {
+      for (let i = 0; i < Math.min(minHours, windSpeedArray.length); i++) {
         const time = new Date(now.getTime() + i * 60 * 60 * 1000);
         forecast.push({
           time: time.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }),
