@@ -42,6 +42,8 @@ export const PORTUGAL_LOCATIONS: WeatherLocation[] = [
   { name: 'Tavira', lat: 37.2639, lon: -7.9139, id: '8' },
   { name: 'Vilamoura', lat: 37.0667, lon: -8.1167, id: '9' },
   { name: 'Olhão', lat: 37.0333, lon: -7.8500, id: '10' },
+  { name: 'Vila Real de Santo António', lat: 37.1833, lon: -7.4167, id: '11' },
+  { name: 'Marina da Associação do Guadiana', lat: 37.2167, lon: -7.4333, id: '12' },
 ];
 
 export const useWeatherData = (location: WeatherLocation) => {
@@ -59,20 +61,36 @@ export const useWeatherData = (location: WeatherLocation) => {
     try {
       setData((prev) => ({ ...prev, loading: true, error: null }));
 
-      // Fetch wind and wave data from Open-Meteo
-      const weatherResponse = await fetch(
-        `https://api.open-meteo.com/v1/marine?latitude=${location.lat}&longitude=${location.lon}&hourly=wind_speed_10m,wind_direction_10m,wave_height&timezone=Europe/Lisbon`
-      );
+      // Fetch wind and wave data from Open-Meteo Forecast API
+      const url = new URL('https://api.open-meteo.com/v1/forecast');
+      url.searchParams.append('latitude', location.lat.toString());
+      url.searchParams.append('longitude', location.lon.toString());
+      url.searchParams.append('hourly', 'wind_speed_10m,wind_direction_10m,wave_height,temperature_2m');
+      url.searchParams.append('timezone', 'Europe/Lisbon');
+
+      const weatherResponse = await fetch(url.toString());
 
       if (!weatherResponse.ok) {
-        throw new Error('Failed to fetch weather data');
+        throw new Error(`API error: ${weatherResponse.status} ${weatherResponse.statusText}`);
       }
 
       const weatherJson = await weatherResponse.json();
-      const currentHour = new Date().getHours();
-      const windSpeed = weatherJson.hourly.wind_speed_10m[currentHour] || 0;
-      const windDirection = weatherJson.hourly.wind_direction_10m[currentHour] || 0;
-      const waveHeight = weatherJson.hourly.wave_height[currentHour] || 0;
+
+      // Validate response structure
+      if (!weatherJson.hourly || !weatherJson.hourly.wind_speed_10m) {
+        throw new Error('Invalid API response structure');
+      }
+
+      // Get first available data point (current hour)
+      const windSpeedArray = weatherJson.hourly.wind_speed_10m;
+      const windDirectionArray = weatherJson.hourly.wind_direction_10m || [];
+      const waveHeightArray = weatherJson.hourly.wave_height || [];
+      const temperatureArray = weatherJson.hourly.temperature_2m || [];
+
+      const windSpeed = windSpeedArray.length > 0 ? windSpeedArray[0] : 0;
+      const windDirection = windDirectionArray.length > 0 ? windDirectionArray[0] : 0;
+      const waveHeight = waveHeightArray.length > 0 ? waveHeightArray[0] : 0;
+      const temperature = temperatureArray.length > 0 ? temperatureArray[0] : 18;
 
       // Generate mock tide data (in production, use a tide API)
       const tideData = generateMockTideData();
@@ -81,10 +99,10 @@ export const useWeatherData = (location: WeatherLocation) => {
       setData((prev) => ({
         ...prev,
         weather: {
-          windSpeed,
-          windDirection,
-          waveHeight,
-          temperature: 18,
+          windSpeed: Math.max(0, windSpeed),
+          windDirection: Math.max(0, Math.min(360, windDirection)),
+          waveHeight: Math.max(0, waveHeight),
+          temperature: Math.round(temperature * 10) / 10,
           timestamp: new Date(),
         },
         tideData,
@@ -93,13 +111,14 @@ export const useWeatherData = (location: WeatherLocation) => {
         loading: false,
       }));
     } catch (error) {
+      console.error('Weather fetch error:', error);
       setData((prev) => ({
         ...prev,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : 'Erro ao buscar dados',
         loading: false,
       }));
     }
-  }, [location]);
+  }, [location.lat, location.lon]);
 
   useEffect(() => {
     fetchWeatherData();
