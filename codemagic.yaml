@@ -1,0 +1,47 @@
+workflows:
+  android-workflow:
+    name: Vela Portugal Android Build
+    instance_type: mac_mini_m1
+    max_build_duration: 60
+    environment:
+      java: 17
+      ndk: 26.1.10909125
+    triggering:
+      events:
+        - push
+        - tag
+        - pull_request
+      branch:
+        include:
+          - main
+    scripts:
+      - name: Install dependencies
+        script: |
+          cd $CM_BUILD_DIR
+          pnpm install
+      - name: Build web assets
+        script: |
+          cd $CM_BUILD_DIR
+          pnpm build
+      - name: Copy assets to dist
+        script: |
+          cd $CM_BUILD_DIR
+          cp dist/public/index.html dist/
+          cp -r dist/public/assets dist/
+      - name: Sync Capacitor
+        script: |
+          cd $CM_BUILD_DIR
+          npx cap sync android
+      - name: Build Android APK
+        script: |
+          cd $CM_BUILD_DIR/android
+          ./gradlew assembleDebug
+    artifacts:
+      - android/app/build/outputs/apk/debug/app-debug.apk
+    publishing:
+      email:
+        recipients:
+          - rafa.m.gab.familylink@gmail.com
+        notify:
+          success: true
+          failure: true
