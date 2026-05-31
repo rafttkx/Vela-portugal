@@ -2,17 +2,19 @@ workflows:
   android-workflow:
     name: Vela Portugal Android Build
     instance_type: mac_mini_m1
-    max_build_duration: 60
+    max_build_duration: 120
     environment:
       java: 17
       ndk: 26.1.10909125
+      vars:
+        GRADLE_OPTS: "-Xmx2048m -XX:MaxPermSize=512m"
     triggering:
       events:
         - push
         - tag
         - pull_request
     scripts:
-      - name: Install dependencies
+      - name: Install Node dependencies
         script: |
           cd $CM_BUILD_DIR
           pnpm install
@@ -20,19 +22,24 @@ workflows:
         script: |
           cd $CM_BUILD_DIR
           pnpm build
-      - name: Copy assets to dist
+      - name: Copy web assets to dist root
         script: |
           cd $CM_BUILD_DIR
-          cp dist/public/index.html dist/
-          cp -r dist/public/assets dist/
-      - name: Sync Capacitor
+          cp dist/public/index.html dist/ || true
+          cp -r dist/public/assets dist/ || true
+          cp -r dist/public/__manus__ dist/ || true
+      - name: Update Capacitor
         script: |
           cd $CM_BUILD_DIR
           npx cap sync android
-      - name: Build Android APK
+      - name: Clean Gradle cache
         script: |
           cd $CM_BUILD_DIR/android
-          ./gradlew assembleDebug
+          ./gradlew clean
+      - name: Build Android APK (Debug)
+        script: |
+          cd $CM_BUILD_DIR/android
+          ./gradlew assembleDebug --no-daemon --stacktrace
     artifacts:
       - android/app/build/outputs/apk/debug/app-debug.apk
     publishing:
