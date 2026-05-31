@@ -11,9 +11,6 @@ workflows:
         - push
         - tag
         - pull_request
-      branch:
-        include:
-          - main
     scripts:
       - name: Install dependencies
         script: |
